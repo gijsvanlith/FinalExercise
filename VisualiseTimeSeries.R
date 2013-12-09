@@ -8,8 +8,8 @@
 # source("PackagesScript.R")
 
 # List all images 
-ndvi_files <- list.files(pattern=glob2rx("*NDVI.tif"),path= "D:/MODIS_ARC/MODISMODIS/MOD09A1.005", full.names=TRUE, recursive=FALSE)
-ndwi_files <- list.files(pattern=glob2rx("*NDWI.tif"),path= "D:/MODIS_ARC/MODISMODIS/MOD09A1.005", full.names=TRUE, recursive=FALSE)
+ndvi_files <- list.files(pattern=glob2rx("*NDVI.tif"),path= "D:/MODIS_ARC/MOD09A1.005", full.names=TRUE, recursive=FALSE)
+ndwi_files <- list.files(pattern=glob2rx("*NDWI.tif"),path= "D:/MODIS_ARC/MOD09A1.005", full.names=TRUE, recursive=FALSE)
 
 # Stack all images per NDVI / NDWI
 ndvi_stack <- stack(x=ndvi_files)
@@ -21,8 +21,9 @@ sceneinfo$ndwi_files <- as.data.frame(ndwi_files)
 sceneinfo$Scene_ID_NDVI <- names(ndvi_stack)
 sceneinfo$Scene_ID_NDWI <- names(ndwi_stack)
 sceneinfo$Scene_ID <- str_sub(string=sceneinfo$Scene_ID_NDWI, start=1,end=17)
-sceneinfo$Dates <- str_sub(string=sceneinfo$Scene_ID, start=5, end=11)
-
+sceneinfo$Julian_dates <- str_sub(string=sceneinfo$Scene_ID, start=5, end=11)
+?as.Date
+sceneinfo$Dates <- as.Date(x=sceneinfo$Julian_dates,  format="%Y%j")
 
 # Create mean values ndvi ndwi
 # create mean rasters 
@@ -33,8 +34,12 @@ meanNDWI <- calc(x=ndwi_stack, fun=mean, na.rm = TRUE)
 
 # Create means per layer 
 win <- extent(ndvi_stack)
-ndvi_means <- extract(x= ndvi_stack, y=win, fun=mean)
-ndwi_means <- extract(x= ndwi_stack, y=win, fun=mean)
+plot(ndvi_stack[[3]])
+
+ndvi_means <- extract(x= ndvi_stack, y=win, fun=mean,na.rm=T)
+ndwi_means <- extract(x= ndwi_stack, y=win, fun=mean,na.rm=T)
+
+plot(meanNDVI[[4]])
 
 # Add them to the dataframe 
 sceneinfo$ndvi_mean <- as.numeric(ndvi_means)
